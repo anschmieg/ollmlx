@@ -12,9 +12,18 @@ Run local LLMs on Apple Silicon via [mlx-lm](https://github.com/ml-explore/mlx-e
 
 ### Homebrew (recommended)
 
+**Menubar app (cask):**
+
 ```bash
 brew tap darrylmorley/ollmlx
 brew install --cask darrylmorley/ollmlx/ollmlx
+```
+
+**CLI only (formula) — required for `brew services`:**
+
+```bash
+brew tap darrylmorley/ollmlx
+brew install darrylmorley/ollmlx/ollmlx
 ```
 
 ### Manual
@@ -45,6 +54,25 @@ The daemon starts automatically when the app launches — no manual setup needed
 - Open server logs
 - Access Settings
 - Check for updates
+
+### brew services
+
+If you installed the formula (not the cask), you can manage the daemon as a background service using `brew services`:
+
+```bash
+# Bootstrap the Python environment once (installs mlx-lm into ~/.ollmlx/venv)
+bash $(brew --prefix)/opt/ollmlx/share/ollmlx/Scripts/install_mlx_lm.sh
+
+# Manage the daemon
+brew services start ollmlx    # start daemon at login, run now
+brew services stop ollmlx     # stop daemon
+brew services restart ollmlx  # restart daemon
+brew services info ollmlx     # show service status
+```
+
+The daemon logs to `$(brew --prefix)/var/log/ollmlx.log`.
+
+> **Note:** The cask (menubar app) manages its own daemon on the same ports (11434/11435). Running both the cask and the formula service simultaneously will cause a port conflict — use one or the other.
 
 ### CLI
 
