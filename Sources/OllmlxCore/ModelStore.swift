@@ -37,12 +37,12 @@ public final class ModelStore: Sendable {
     ///   directory exists and contains at least one `.safetensors` file directly inside it.
     /// - For Hugging Face repo IDs: returns `true` when the model has been fully downloaded
     ///   into the HF hub cache (`~/.cache/huggingface/hub`).
-    public func isModelCached(_ repoID: String) -> Bool {
-        if Self.isLocalPath(repoID) {
-            let expandedPath = Self.expandPath(repoID)
+    public func isModelCached(_ model: String) -> Bool {
+        if Self.isLocalPath(model) {
+            let expandedPath = Self.expandPath(model)
             return hasLocalSafetensors(atPath: expandedPath)
         }
-        let dirName = "models--\(repoID.replacingOccurrences(of: "/", with: "--"))"
+        let dirName = "models--\(model.replacingOccurrences(of: "/", with: "--"))"
         let modelPath = "\(hfCacheDir)/\(dirName)"
         return hasCompleteSafetensors(atModelPath: modelPath)
     }
