@@ -7,7 +7,7 @@ struct Run: AsyncParsableCommand {
         abstract: "Run a model (start if needed) and optionally send a prompt"
     )
 
-    @Argument(help: "Model name (e.g. mlx-community/Llama-3.2-3B-Instruct-4bit)")
+    @Argument(help: "Model name (e.g. mlx-community/Llama-3.2-3B-Instruct-4bit) or local path (e.g. /path/to/model)")
     var model: String
 
     @Argument(help: "Optional prompt — if omitted, enters interactive REPL")

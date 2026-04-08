@@ -12,11 +12,36 @@ public final class ModelStore: Sendable {
         self.hfCacheDir = "\(home)/.cache/huggingface/hub"
     }
 
+    // MARK: - Local Path Detection
+
+    /// Returns true if the model string refers to a local filesystem path rather than a
+    /// Hugging Face repo ID.  Recognised prefixes: `/`, `~/`, `./`, `../`.
+    public static func isLocalPath(_ model: String) -> Bool {
+        model.hasPrefix("/") || model.hasPrefix("~/") || model.hasPrefix("./") || model.hasPrefix("../")
+    }
+
+    /// Expand a leading `~` to the current user's home directory.
+    public static func expandPath(_ path: String) -> String {
+        if path.hasPrefix("~/") {
+            let home = FileManager.default.homeDirectoryForCurrentUser.path
+            return home + path.dropFirst(1)
+        }
+        return path
+    }
+
     // MARK: - Cache Scanning
 
-    /// Check if a model is already downloaded in the HF cache.
-    /// Returns true only if the model has at least one .safetensors file (i.e. download is complete).
+    /// Check if a model is available locally.
+    ///
+    /// - For local filesystem paths (absolute, `~/`, `./`, `../`): returns `true` when the
+    ///   directory exists and contains at least one `.safetensors` file directly inside it.
+    /// - For Hugging Face repo IDs: returns `true` when the model has been fully downloaded
+    ///   into the HF hub cache (`~/.cache/huggingface/hub`).
     public func isModelCached(_ repoID: String) -> Bool {
+        if Self.isLocalPath(repoID) {
+            let expandedPath = Self.expandPath(repoID)
+            return hasLocalSafetensors(atPath: expandedPath)
+        }
         let dirName = "models--\(repoID.replacingOccurrences(of: "/", with: "--"))"
         let modelPath = "\(hfCacheDir)/\(dirName)"
         return hasCompleteSafetensors(atModelPath: modelPath)
@@ -162,6 +187,18 @@ public final class ModelStore: Sendable {
     }
 
     // MARK: - Private Helpers
+
+    /// Check if a local directory contains at least one `.safetensors` file directly inside it.
+    /// Used for models loaded from the filesystem rather than the HF hub cache.
+    private func hasLocalSafetensors(atPath path: String) -> Bool {
+        let fm = FileManager.default
+        var isDir: ObjCBool = false
+        guard fm.fileExists(atPath: path, isDirectory: &isDir), isDir.boolValue else {
+            return false
+        }
+        let files = (try? fm.contentsOfDirectory(atPath: path)) ?? []
+        return files.contains(where: { $0.hasSuffix(".safetensors") })
+    }
 
     /// Check if a model directory contains at least one .safetensors file in its snapshots.
     /// Partial or failed downloads will have the directory structure but no weight files.

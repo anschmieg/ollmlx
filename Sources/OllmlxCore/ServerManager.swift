@@ -29,7 +29,7 @@ public final class ServerManager: ObservableObject {
             throw ServerError.alreadyRunning
         }
 
-        // Validate model is cached locally
+        // Validate model is cached locally (or exists at the given local path)
         guard modelStore.isModelCached(model) else {
             throw ServerError.modelNotFound(model)
         }
@@ -42,6 +42,9 @@ public final class ServerManager: ObservableObject {
             state = .error("Python path not configured. Run bootstrap first.")
             throw ServerError.modelNotFound("Python path not configured")
         }
+
+        // Expand ~ in local paths — Process() does not interpret shell tildes
+        let resolvedModel = ModelStore.isLocalPath(model) ? ModelStore.expandPath(model) : model
 
         // Allocate ephemeral port for mlx_lm.server
         let internalPort: Int
@@ -59,7 +62,7 @@ public final class ServerManager: ObservableObject {
         proc.executableURL = URL(fileURLWithPath: pythonPath)
         proc.arguments = [
             "-m", "mlx_lm.server",
-            "--model", model,
+            "--model", resolvedModel,
             "--port", String(internalPort),
             "--max-tokens", String(config.maxTokens),
         ]
