@@ -50,11 +50,11 @@ public final class DaemonServer: Sendable {
                 return try Self.errorResponse(status: .conflict, message: "Server is already starting")
             }
 
-            // Validate model is cached
+            // Validate model is cached or exists at the given local path
             guard ModelStore.shared.isModelCached(model) else {
                 return try Self.errorResponse(
                     status: .notFound,
-                    message: "Model not found in local cache: \(model)"
+                    message: "Model not found: \(model)"
                 )
             }
 

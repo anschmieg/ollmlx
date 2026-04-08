@@ -7,7 +7,7 @@ struct Pull: AsyncParsableCommand {
         abstract: "Pull a model from Hugging Face"
     )
 
-    @Argument(help: "Model name (e.g. mlx-community/Llama-3.2-3B-Instruct-4bit)")
+    @Argument(help: "Model name (e.g. mlx-community/Llama-3.2-3B-Instruct-4bit) — local paths cannot be pulled")
     var model: String
 
     func run() async throws {

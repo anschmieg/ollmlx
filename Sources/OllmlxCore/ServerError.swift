@@ -9,7 +9,7 @@ public enum ServerError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .modelNotFound(let model):
-            return "Model not found in local cache: \(model)"
+            return "Model not found: \(model)"
         case .processDied:
             return "mlx_lm.server process died unexpectedly"
         case .timeout:
